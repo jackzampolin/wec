@@ -9,7 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "influx": "^5.0.0-alpha.4",s
-    "socket.io-client": "~0.9"
+    "active-x-obfuscator": "0.0.2",
+    "influx": "^5.0.0-alpha.4",
+    "socket.io-client": "0.9.1"
   }
 }

@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env: 
+        - name: DATABSE_NAME
+          value: {{ .Values.database_name | quote }}
+        - name: INFLUX_URL
+          value: {{ .Values.influx_url | quote }}
+        - name: INFLUX_PORT
+          value: {{ .Values.influx_port | quote }}
+        - name: BATCH_SIZE
+          value: {{ .Values.batch_size | quote }}
+        - name: CONNECTION_URL
+          value: {{ .Values.connection_url | quote }}

@@ -6,11 +6,19 @@
 
 var io = require('socket.io-client');
 var Influx = require('influx');
-var socket = io.connect('https://stream.wikimedia.org/rc');
-var database = 'wikipedia'
+var database = process.env.DATABSE_NAME || 'wikipedia'
+var influxHost = process.env.INFLUX_URL || 'localhost' 
+var influxPort = process.env.INFLUX_PORT || '8086' 
+var batchSize = process.env.BATCH_SIZE || 10
+var connectionUrl = process.env.CONNECTION_URL || 'https://stream.wikimedia.org/rc'
 
+// Connect to wikipedia real time event stream
+var socket = io.connect(connectionUrl)
+
+// Instantiate the InfluxDB client and initialize the schema
 const influx = new Influx.InfluxDB({
-  host: 'localhost',
+  host: influxHost,
+  port: influxPort,
   database: database,
   schema: [
     {
@@ -23,7 +31,8 @@ const influx = new Influx.InfluxDB({
         "minor",
         "patrolled",
         "log_type",
-        "wiki"
+        "wiki",
+        "namespace_tag"
       ],
       "fields": {
         "title": Influx.FieldType.STRING,
@@ -42,51 +51,43 @@ const influx = new Influx.InfluxDB({
   ]
 })
 
-err = influx.createDatabase('wikipedia')
+// Create the database for this application if it does not exist
+influx.createDatabase('wikipedia')
 
-if (err !== null) {
-  console.log(err)
-}
-
+// Subscribe to all wikipedia events
 socket.on('connect', () => {
   socket.emit('subscribe', '*')
 })
 
-var points = []
-
-socket.on('change',socketOnChange);
-
-var socketOnChange = function (data) {
-  switch (data.type) {
-    case 'edit':
-      points.push(editPoint(data))
-      break;
-    case 'new':
-      points.push(editPoint(data))
-      break;
-    case 'log':
-      points.push(logPoint(data))
-      break;
-    case 'categorize':
-      points.push(eventPoint(data))
-      break;
-    default:
-      console.log(data.type)
-      console.log(data)
-      console.log("=========================================")
-  }
-  if (points.length >= 10) {
-    influx.writePoints(points,{
-      database: database,
-      retentionPolicy: 'autogen',
-      precision: 's'
-    }).catch(err => {
-      console.log(err.message)
-    })
-    points = []
-  } 
+var writeConfig = {
+  database: database,
+  retentionPolicy: 'autogen',
+  precision: 's'
 }
 
+// Handle events as they are emitted
+socket.on('change', function (data) {
+  // Switch on event type
+  switch (data.type) {
+    case 'edit':
+      influx.writePoints([editPoint(data)],writeConfig)
+      break;
+    case 'new':
+      influx.writePoints([editPoint(data)],writeConfig)
+      break;
+    case 'log':
+      influx.writePoints([logPoint(data)],writeConfig)
+      break;
+    case 'categorize':
+      influx.writePoints([eventPoint(data)],writeConfig)
+      break;
+    default:
+      console.log("missed event of ", data.type, " type...")
+      break;
+  }
+})
+
+// Point creation for edit and new events
 var editPoint = function (data) {
   return {
     "measurement": "event",
@@ -97,7 +98,8 @@ var editPoint = function (data) {
       "server_name": `"${encodeURI(data.server_name)}"`,
       "wiki": `"${encodeURI(data.wiki)}"`,
       "minor": `"${encodeURI(data.minor)}"`,
-      "patrolled": `"${encodeURI(data.patrolled)}"`
+      "patrolled": `"${encodeURI(data.patrolled)}"`,
+      "namespace_tag": Math.round(data.namespace)
     },
     "fields": {
       "post_length_old": Math.round(data.length.old),
@@ -112,6 +114,7 @@ var editPoint = function (data) {
   }
 }
 
+// Point creation for generic events
 var eventPoint = function (data) {
   return {
     "measurement": "event",
@@ -120,7 +123,8 @@ var eventPoint = function (data) {
       "type": `"${encodeURI(data.type)}"`,
       "bot": `"${encodeURI(data.bot)}"`,
       "server_name": `"${encodeURI(data.server_name)}"`,
-      "wiki": `"${encodeURI(data.wiki)}"`
+      "wiki": `"${encodeURI(data.wiki)}"`,
+      "namespace_tag": Math.round(data.namespace)
     },
     "fields": {
       "title": `"${encodeURI(data.title)}"`,
@@ -131,6 +135,7 @@ var eventPoint = function (data) {
   }
 }
 
+// Point creation for the log event type
 var logPoint = function (data) {
   return {
     "measurement": "event",
@@ -140,7 +145,8 @@ var logPoint = function (data) {
       "bot": `"${encodeURI(data.bot)}"`,
       "server_name": `"${encodeURI(data.server_name)}"`,
       "wiki": `"${encodeURI(data.wiki)}"`,
-      "log_type": `"${encodeURI(data.log_type)}"`
+      "log_type": `"${encodeURI(data.log_type)}"`,
+      "namespace_tag": Math.round(data.namespace)
     },
     "fields": {
       "title": `"${encodeURI(data.title)}"`,

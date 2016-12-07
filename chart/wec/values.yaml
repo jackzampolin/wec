@@ -1,0 +1,13 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 3
+image:
+  repository: gcr.io/influx-perf-testing/wec
+  tag: latest
+  pullPolicy: Always
+database_name: 'wikipedia'
+influx_url: "db-influxdb.prod"
+influx_port: "8086"
+batch_size: 100
+connection_url: 'https://stream.wikimedia.org/rc'
