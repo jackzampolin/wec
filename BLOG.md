@@ -8,7 +8,9 @@ Bottom line is when you are running Kubernetes you quickly get to a place where 
 
 Enter `helm`. 
 
-[Helm](https://github.com/kubernetes/helm) is a tempting, packaging and deployment manager for Kubernetes. Think of it like `apt-get` or `brew` for Kubernetes. This is a quick guide to writing a simple `helm` chart with a focus on workflow. If you want to follow along download [`helm`](https://github.com/kubernetes/helm/blob/master/docs/install.md). A familiarity with Kubernetes and Docker is required.
+[Helm](https://github.com/kubernetes/helm) is a tempting, packaging and deployment manager for Kubernetes. Think of it like `apt-get` or `brew` for Kubernetes. It consists of a server that runs in your cluster and renders your templates, `tiller`, and a command line interface `helm`. 
+
+This is a quick guide to writing a simple `helm` chart with a focus on workflow. If you want to follow along download [`helm`](https://github.com/kubernetes/helm/blob/master/docs/install.md). A familiarity with Kubernetes and Docker is required.
 
 ### 1. Find an application to deploy
 
@@ -162,4 +164,12 @@ Once the deployment is running you should be able to see the events flowing into
 
 ### 7. Next Steps
 
-This guide just scratches the surface of helm charts. Helm also offers [`hooks`](https://github.com/kubernetes/helm/blob/master/docs/charts_hooks.md) to enable running jobs at different points in chart lifecycle. There is also an excellent [tips and tricks](https://github.com/kubernetes/helm/blob/master/docs/charts_tips_and_tricks.md) guide for debugging common issues. If you have further questions, the helm community is active on the [Kubernetes](http://slack.k8s.io/) slack in the `helm` channel. 
+This guide just scratches the surface of helm charts. Helm also offers [`hooks`](https://github.com/kubernetes/helm/blob/master/docs/charts_hooks.md) to enable running jobs at different points in chart lifecycle. There is also an excellent [tips and tricks](https://github.com/kubernetes/helm/blob/master/docs/charts_tips_and_tricks.md) guide for debugging common issues. And [packaging charts for distribution](https://github.com/kubernetes/helm/blob/master/docs/chart_repository.md) and building chart repos could be another blog post in and of itself. If you have further questions, the helm community is active on the [Kubernetes](http://slack.k8s.io/) slack in the `helm` channel. 
+
+If you are interested in experimenting more with the InfluxData stack we have charts for all of our products available in the main charts repo:
+  
+* [`kapacitor`](https://github.com/kubernetes/charts/blob/master/stable/kapacitor)
+* [`influxdb`](https://github.com/kubernetes/charts/blob/master/stable/influxdb)
+* [`chronograf`](https://github.com/kubernetes/charts/blob/master/stable/chronograf)
+* [`telegraf`](https://github.com/kubernetes/charts/blob/master/stable/telegraf)
+
