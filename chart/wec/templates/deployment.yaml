@@ -26,3 +26,5 @@ spec:
           value: {{ .Values.batch_size | quote }}
         - name: CONNECTION_URL
           value: {{ .Values.connection_url | quote }}
+        resources:
+{{ toYaml .Values.resources | indent 12 }}
